@@ -4,7 +4,7 @@ A small package to communicate with the Zemo Bot API.
 
 ## Installation
 
-Use git [Git](https://git-scm.com/) to install the Package.
+Use [Git](https://git-scm.com/) to install the Package.
 
 ```bash
 git clone https://github.com/ramy-zemo/ZemoBotAPICLient
