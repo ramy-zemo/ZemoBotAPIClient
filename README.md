@@ -4,6 +4,12 @@ A small package to communicate with the Zemo Bot API.
 
 ## Installation
 
+Use git [Git](https://git-scm.com/) to install the Package.
+
+```bash
+git clone https://github.com/ramy-zemo/ZemoBotAPICLient
+```
+
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
 
 ```bash
