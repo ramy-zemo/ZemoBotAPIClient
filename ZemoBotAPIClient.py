@@ -2,6 +2,7 @@ import jwt
 from requests.models import Request, Response
 from requests import request
 from dataclasses import dataclass
+from config import API_URL, JWT_SECRET
 
 
 class ClientCreationError(Exception):
@@ -51,8 +52,8 @@ class Endpoint:
 
 
 class ZemoBotApiClient:
-    def __init__(self, username: str = "", password: str = "", API_KEY: str = "", JWT_SECRET: str = ""):
-        self.base_api_url = "http://127.0.0.1:8000"
+    def __init__(self, username: str = "", password: str = "", API_KEY: str = ""):
+        self.base_api_url = API_URL
         self.JWT_SECRET = JWT_SECRET
 
         # Declaring endpoints
