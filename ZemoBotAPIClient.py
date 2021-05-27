@@ -73,16 +73,17 @@ class ZemoBotApiClient:
         self.get_all_guild_categories = Endpoint("/command_categories/get_all_guild_categories", "GET")
 
         # Commands
-        self.create_command = Endpoint("commands/create_command", "POST")
-        self.get_all_guild_commands_and_category = Endpoint("commands/get_all_guild_commands_and_category", "GET")
-        self.get_all_guild_commands_from_category = Endpoint("commands/get_all_guild_commands_from_category", "GET")
-        self.delete_command = Endpoint("commands/delete_command", "DELETE")
+        self.create_command = Endpoint("/commands/create_command", "POST")
+        self.get_all_guild_commands_and_category = Endpoint("/commands/get_all_guild_commands_and_category", "GET")
+        self.get_all_guild_commands_from_category = Endpoint("/commands/get_all_guild_commands_from_category", "GET")
+        self.delete_command = Endpoint("/commands/delete_command", "DELETE")
 
         # Disabled commands
-        self.disable_command = Endpoint("disabled_commands/disable_command", "POST")
-        self.enable_command = Endpoint("disabled_commands/enable_command", "POST")
-        self.check_command_status_for_guild = Endpoint("disabled_commands/check_command_status_for_guild", "GET")
-        self.get_all_disabled_commands_from_guild = Endpoint("disabled_commands/get_all_disabled_commands_from_guild", "GET")
+        self.disable_command = Endpoint("/disabled_commands/disable_command", "POST")
+        self.enable_command = Endpoint("/disabled_commands/enable_command", "POST")
+        self.check_command_status_for_guild = Endpoint("/disabled_commands/check_command_status_for_guild", "GET")
+        self.get_all_disabled_commands_from_guild = Endpoint("/disabled_commands/get_all_disabled_commands_from_guild",
+                                                             "GET")
 
         # Invites
         self.log_invite = Endpoint("/invites/log_invite", "POST")
@@ -99,21 +100,21 @@ class ZemoBotApiClient:
         self.get_user_messages = Endpoint("/messages/get_user_messages", "GET")
 
         # Config
-        self.activate_guild = Endpoint("config/activate_guild", "POST")
-        self.deactivate_guild = Endpoint("config/deactivate_guild", "POST")
-        self.change_prefix = Endpoint("config/change_prefix", "POST")
-        self.setup_config = Endpoint("config/setup_config", "POST")
-        self.change_msg_welcome_channel = Endpoint("config/change_msg_welcome_channel", "POST")
-        self.update_twitch_username = Endpoint("config/update_twitch_username", "POST")
-        self.change_auto_role = Endpoint("config/change_auto_role", "POST")
-        self.change_welcome_message = Endpoint("config/change_welcome_message", "POST")
-        self.get_prefix = Endpoint("config/get_prefix", "GET")
-        self.check_server_status = Endpoint("config/check_server_status", "GET")
-        self.get_all_twitch_data = Endpoint("config/get_all_twitch_data", "GET")
-        self.get_twitch_username = Endpoint("config/get_twitch_username", "GET")
-        self.get_welcome_role_id = Endpoint("config/get_welcome_role_id", "GET")
-        self.get_welcome_message = Endpoint("config/get_welcome_message", "GET")
-        self.delete_all_configs = Endpoint("config/delete_all_configs", "DELETE")
+        self.activate_guild = Endpoint("/config/activate_guild", "POST")
+        self.deactivate_guild = Endpoint("/config/deactivate_guild", "POST")
+        self.change_prefix = Endpoint("/config/change_prefix", "POST")
+        self.setup_config = Endpoint("/config/setup_config", "POST")
+        self.change_msg_welcome_channel = Endpoint("/config/change_msg_welcome_channel", "POST")
+        self.update_twitch_username = Endpoint("/config/update_twitch_username", "POST")
+        self.change_auto_role = Endpoint("/config/change_auto_role", "POST")
+        self.change_welcome_message = Endpoint("/config/change_welcome_message", "POST")
+        self.get_prefix = Endpoint("/config/get_prefix", "GET")
+        self.check_server_status = Endpoint("/config/check_server_status", "GET")
+        self.get_all_twitch_data = Endpoint("/config/get_all_twitch_data", "GET")
+        self.get_twitch_username = Endpoint("/config/get_twitch_username", "GET")
+        self.get_welcome_role_id = Endpoint("/config/get_welcome_role_id", "GET")
+        self.get_welcome_message = Endpoint("/config/get_welcome_message", "GET")
+        self.delete_all_configs = Endpoint("/config/delete_all_configs", "DELETE")
 
         # Trashtalk
         self.add_trashtalk = Endpoint("/trashtalk/add_trashtalk", "POST")
@@ -150,28 +151,35 @@ class ZemoBotApiClient:
         """Generates API KEY by passing username and password to the API"""
         generate_token_params = {"username": username, "password": password}
 
-        request_object = Request(self.generate_token.method, url=self.generate_token, params=generate_token_params)
+        request_object = Request(self.generate_token.method, url=self.generate_token.url, params=generate_token_params)
         result = self.send_request(request_object)
 
-        if result.status_code == 200:
-            api_key = result.json()["Token"]
-        else:
+        try:
+            api_key = result["Token"]
+        except:
             raise AuthenticationError()
 
         return api_key
 
-    def send_request(self, request_to_send: Request) -> Response:
+    def send_request(self, request_to_send: Request):
         """This is a request handler which makes a request based on the request input."""
-        if request_to_send.url in self.__dict__.values():
+        if request_to_send.url in [x.url for x in self.__dict__.values() if hasattr(x, "url")]:
+            if hasattr(self, "API_KEY"):
+                request_to_send.params["API_Key"] = self.API_KEY
+
             response = request(request_to_send.method, self.base_api_url + request_to_send.url,
                                headers=request_to_send.headers, params=request_to_send.params)
-            return response
+            try:
+                return response.json()
+            except:
+                return response.content.decode()
+
         else:
             raise EndpointException()
 
     def request(self, endpoint: Endpoint, headers: dict = {}, params: dict = {}):
         """Create request based on endpoint, headers and url params & make the request."""
-        request_to_send = Request(endpoint.method, self.base_api_url + endpoint, headers=headers, params=params)
+        request_to_send = Request(endpoint.method, endpoint.url, headers=headers, params=params)
         response = self.send_request(request_to_send)
 
         return response
