@@ -169,6 +169,11 @@ class ZemoBotApiClient:
         else:
             raise EndpointException()
 
+    def request(self, endpoint: Endpoint, headers: dict = {}, params: dict = {}):
+        """Create request based on endpoint, headers and url params & make the request."""
+        request_to_send = Request(endpoint.method, self.base_api_url + endpoint, headers=headers, params=params)
+        self.send_request(request_to_send)
+
     def endpoints(self) -> list:
         """DebugCommand to get a list of all available endpoints."""
         return [endpoint for endpoint in self.__dict__.values() if isinstance(endpoint, Endpoint)]
